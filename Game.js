@@ -1,5 +1,6 @@
 import { Entity } from "./Entity.js"
 import { Player } from "./Player.js"
+import { Projectile } from "./Projectile.js"
 
 export class Game {
     constructor() {
@@ -7,15 +8,13 @@ export class Game {
         this.ctx = this.canvas.getContext("2d")
         this.middle = Math.round(this.canvas.width / 2)
         this.objects = new Set()
-        this.player = new Player(this, {y:0})
+        this.player = new Player({game: this, y:0})
         this.gravity = 1
 
         this.cursor = {
             x: 0,
             y: 0
         }
-        this.anglefollower = new Entity(this, { x: 25, y: 250, color: "red", width: 100, height: 1, angle: 0 })
-        this.objects.add(this.anglefollower)
     }
     y(y) {
         return this.canvas.height - y
@@ -34,7 +33,7 @@ export class Game {
             res["not"] = false
         }
         this.objects.forEach(o => {
-            if (o.uuid === this.uuid) return
+            if (o.uuid === this.uuid || !o.collidable) return
             if (obj.x + obj.width > o.x && obj.x < o.x + o.width && obj.y <= o.y + o.height && obj.y > o.y + (o.height / 2)) {
                 res["bottom"] = true
                 res["bottom-object"] = o
@@ -72,12 +71,9 @@ export class Game {
             let y = Math.ceil((ME.clientY - this.canvas.getBoundingClientRect().top) / this.canvas.getBoundingClientRect().height * this.canvas.height)
             this.cursor.x = x
             this.cursor.y = y
-            
-            let angle = (Math.atan((this.cursor.y - this.anglefollower.realY) / (this.cursor.x - this.anglefollower.realX)) * 180 / Math.PI)
-            if (this.cursor.x < this.anglefollower.realX) {
-                angle -= 180
-            }
-            this.anglefollower.angle = angle
+        })
+        this.canvas.addEventListener("mousedown", (ME) => {
+            this.objects.add(new Projectile({game: this, x: this.player.x + this.player.width/2, y: this.player.height/2}))
         })
 
         this.objects.add(this.player)
@@ -89,8 +85,10 @@ export class Game {
             this.draw()
         })
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        this.player.refresh()
         this.objects.forEach(o => {
+            if (o.refresh) {
+                o.refresh()
+            }
             if (o.gravitysubject && !this.collision(o).bottom) {
                 o.vy -= Math.min(this.gravity + this.gravity*.1, this.gravity)
             }

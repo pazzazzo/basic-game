@@ -2,8 +2,8 @@ import { Entity } from "./Entity.js";
 import { Game } from "./Game.js";
 
 export class Player extends Entity {
-    constructor(game = new Game, settings) {
-        super(game, settings)
+    constructor(config = { game: new Game() }) {
+        super(config)
         this.speed = 10
         this.gravitysubject = true
         this.jump = false
@@ -26,7 +26,7 @@ export class Player extends Entity {
             this.vx = -this.speed
         } else if (this.vx < 0) {
             this.vx = 0
-            this.vx = Math.ceil((this.vx / 1.1)*10)/10
+            this.vx = Math.ceil((this.vx / 1.1) * 10) / 10
         }
 
         if (this.controls['ArrowRight']) {
@@ -34,7 +34,7 @@ export class Player extends Entity {
             this.vx = this.speed
         } else if (this.vx > 0) {
             this.vx = 0
-            this.vx = Math.floor((this.vx / 1.1)*10)/10
+            this.vx = Math.floor((this.vx / 1.1) * 10) / 10
         }
         if (this.controls[" "] && !this.jump) {
             // debugger
@@ -46,7 +46,7 @@ export class Player extends Entity {
         if (this.game.collision(this).bottom) {
             this.jump = false
         }
-        
+
         // console.log(this.game.collision(this).bottom);
     }
 }

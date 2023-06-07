@@ -2,20 +2,21 @@ import { Game } from "./Game.js"
 import { v4 } from 'https://jspm.dev/uuid';
 
 export class Entity {
-    constructor(game = new Game(), settings = {}) {
+    constructor(config = { game: new Game() }) {
         this.uuid = v4()
-        this.game = game
-        this.gravitysubject = settings.gravitysubject || false
-        this.angle = settings.angle || 0
+        this.game = config.game
+        this.gravitysubject = config.gravitysubject || false
+        this.collidable = config.collidable || true
+        this.angle = config.angle || 0
         this.vx = 0
         this.vy = 0
-        this.x = settings.x || 0
-        this.y = settings.y || 0
-        this.color = settings.color || "white"
-        this.height = settings.height || 50
-        this.width = settings.width || 50
+        this.x = config.x || 0
+        this.y = config.y || 0
+        this.color = config.color || "white"
+        this.height = config.height || 50
+        this.width = config.width || 50
     }
-    get realY () {
+    get realY() {
         return this.game.y(this.y + this.height)
     }
     get realX() {
@@ -33,7 +34,7 @@ export class Entity {
             let collision = this.game.collision(this, true)
             if (collision.top) {
                 this.vy = 0
-                this.y = collision["bottom-object"].y
+                this.y = collision["top-object"].y
             }
         }
         this.x += this.vx
