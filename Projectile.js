@@ -14,7 +14,7 @@ export class Projectile extends Entity {
         if (this.game.cursor.x < this.realX) {
             this.angle += 180
         }
-
+        
         this.vx = this.speed * Math.cos(Math.PI * this.angle / 180);
         this.vy = -this.speed * Math.sin(Math.PI * this.angle / 180);
     }

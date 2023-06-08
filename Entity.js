@@ -23,14 +23,14 @@ export class Entity {
         return this.x + this.game.middle - this.game.player.x
     }
     draw() {
-        if (this.vy < 0) {
+        if (this.vy < 0 && this.collidable) {
             let collision = this.game.collision(this, true)
             if (collision.bottom) {
                 this.vy = 0
                 this.y = collision["bottom-object"].y + collision["bottom-object"].height
             }
         }
-        if (this.vy > 0) {
+        if (this.vy > 0 && this.collidable) {
             let collision = this.game.collision(this, true)
             if (collision.top) {
                 this.vy = 0
@@ -40,11 +40,11 @@ export class Entity {
         this.x += this.vx
         this.y += this.vy
         let collision = this.game.collision(this, true)
-        if (collision.right) {
+        if (collision.right && this.collidable) {
             this.vx = 0
             this.x = collision["right-object"].x - this.width
         }
-        if (collision.left) {
+        if (collision.left && this.collidable) {
             this.vx = 0
             this.x = collision["left-object"].x + collision["left-object"].width
         }

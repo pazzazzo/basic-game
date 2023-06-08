@@ -1,4 +1,6 @@
+import { Control } from "./Control.js"
 import { Entity } from "./Entity.js"
+import { PhoneControl } from "./PhoneControl.js"
 import { Player } from "./Player.js"
 import { Projectile } from "./Projectile.js"
 
@@ -8,13 +10,22 @@ export class Game {
         this.ctx = this.canvas.getContext("2d")
         this.middle = Math.round(this.canvas.width / 2)
         this.objects = new Set()
+        this.buttons = new Set()
         this.player = new Player({game: this, y:0})
         this.gravity = 1
+
+        this.control = new Control(this)
+        this.phoneControl = new PhoneControl(this)
+
+        this.objects.add(new Entity({game: this, x: 100, color: "red"}))
 
         this.cursor = {
             x: 0,
             y: 0
         }
+    }
+    get isMobileUser() {
+        return (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
     }
     y(y) {
         return this.canvas.height - y
@@ -60,8 +71,18 @@ export class Game {
     resize() {
         this.canvas.width = innerWidth
         this.middle = Math.round(this.canvas.width / 2)
+        if (this.isMobileUser) {
+            this.canvas.height = innerHeight
+        } else {
+            this.canvas.height = 500
+        }
     }
     init() {
+        if (this.isMobileUser) {
+            screen.orientation.lock("landscape").catch((e) => {
+                console.warn(e);
+            })
+        }
         this.resize()
         window.addEventListener("resize", () => {
             this.resize()
@@ -72,11 +93,30 @@ export class Game {
             this.cursor.x = x
             this.cursor.y = y
         })
-        this.canvas.addEventListener("mousedown", (ME) => {
-            this.objects.add(new Projectile({game: this, x: this.player.x + this.player.width/2, y: this.player.height/2}))
+        this.canvas.addEventListener("touchstart", ME => {
+            let x = Math.ceil((ME.touches[0].clientX - this.canvas.getBoundingClientRect().left) / this.canvas.getBoundingClientRect().width * this.canvas.width)
+            let y = Math.ceil((ME.touches[0].clientY - this.canvas.getBoundingClientRect().top) / this.canvas.getBoundingClientRect().height * this.canvas.height)
+            this.cursor.x = x
+            this.cursor.y = y
         })
 
         this.objects.add(this.player)
+        this.control.init()
+        this.phoneControl.init()
+        
+        this.canvas.addEventListener(this.isMobileUser ? "touchstart" : "mousedown", (ME) => {
+            if (this.isMobileUser) {
+                this.canvas.requestFullscreen()
+            }
+            let can = true
+            this.buttons.forEach(b => {
+                if (b.pressed) {
+                    can = false 
+                }
+            })
+            if (!can) return
+            this.objects.add(new Projectile({game: this, x: this.player.x + this.player.width/2, y: this.player.y + this.player.height/2}))
+        })
 
         this.draw()
     }
@@ -94,13 +134,18 @@ export class Game {
             }
             o.draw()
         })
-        this.ctx.fillStyle = "#ffffff"
-        this.ctx.beginPath();
-        this.ctx.arc(this.cursor.x, this.cursor.y, 6, 0, 2 * Math.PI)
-        this.ctx.fill();
-        this.ctx.fillStyle = "#ff0000"
-        this.ctx.beginPath();
-        this.ctx.arc(this.cursor.x, this.cursor.y, 5, 0, 2 * Math.PI)
-        this.ctx.fill();
+        if (!this.isMobileUser) {
+            this.ctx.fillStyle = "#ffffff"
+            this.ctx.beginPath();
+            this.ctx.arc(this.cursor.x, this.cursor.y, 6, 0, 2 * Math.PI)
+            this.ctx.fill();
+            this.ctx.fillStyle = "#ff0000"
+            this.ctx.beginPath();
+            this.ctx.arc(this.cursor.x, this.cursor.y, 5, 0, 2 * Math.PI)
+            this.ctx.fill();
+        }
+        this.buttons.forEach(b => {
+            b.draw()
+        })
     }
 }
