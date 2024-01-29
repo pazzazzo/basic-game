@@ -3,6 +3,7 @@ import { Entity } from "./Entity.js"
 import { PhoneControl } from "./PhoneControl.js"
 import { Player } from "./Player.js"
 import { Projectile } from "./Projectile.js"
+import { Background } from "./Background.js";
 
 export class Game {
     constructor() {
@@ -11,13 +12,18 @@ export class Game {
         this.middle = Math.round(this.canvas.width / 2)
         this.objects = new Set()
         this.buttons = new Set()
-        this.player = new Player({game: this, y:0})
+        this.player = new Player({game: this, x:1, y:0, color: "#311212"})
         this.gravity = 1
 
         this.control = new Control(this)
         this.phoneControl = new PhoneControl(this)
+        this.background = new Background({game: this})
 
         this.objects.add(new Entity({game: this, x: 100, color: "red"}))
+        this.objects.add(new Entity({game: this, x: 150, y: 50, color: "red"}))
+        this.objects.add(new Entity({game: this, x: 200, y: 100, color: "red"}))
+        this.objects.add(new Entity({game: this, x: 250, y: 150, color: "red"}))
+        this.objects.add(new Entity({game: this, x: -1, y: 0, height: 81entirely0, width: 1, color: "red", collidable: false}))
 
         this.cursor = {
             x: 0,
@@ -37,6 +43,11 @@ export class Game {
             "bottom": false,
             "top": false,
             "not": true
+        }
+        if (obj.x <= 0) {
+            res["left"] = true
+            res["left-object"] = {"y": 0, "x": 0, "width": 0, "height": Infinity}
+            res.not = false
         }
         if (obj.y <= 0) {
             res["bottom"] = true
@@ -60,7 +71,7 @@ export class Game {
                 res["right-object"] = o
                 res.not = false
             }
-            if (obj.x < o.x + o.width && obj.x >= o.x + (o.width / 2) && (vector ? obj.vx < 0 : true) && obj.y < o.y + o.height && obj.y + obj.height > o.y) {
+            if (obj.x < o.x + o.width + 1 && obj.x >= o.x + (o.width / 2) && (vector ? obj.vx < 0 : true) && obj.y < o.y + o.height && obj.y + obj.height > o.y) {
                 res.left = true
                 res["left-object"] = o
                 res.not = false
@@ -125,6 +136,7 @@ export class Game {
             this.draw()
         })
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        this.background.update()
         this.objects.forEach(o => {
             if (o.refresh) {
                 o.refresh()
