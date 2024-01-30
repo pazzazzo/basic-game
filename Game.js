@@ -23,7 +23,7 @@ export class Game {
         this.objects.add(new Entity({game: this, x: 150, y: 50, color: "red"}))
         this.objects.add(new Entity({game: this, x: 200, y: 100, color: "red"}))
         this.objects.add(new Entity({game: this, x: 250, y: 150, color: "red"}))
-        this.objects.add(new Entity({game: this, x: -1, y: 0, height: 81entirely0, width: 1, color: "red", collidable: false}))
+        this.objects.add(new Entity({game: this, x: -1, y: 0, height: 810, width: 1, color: "red", collidable: false}))
 
         this.cursor = {
             x: 0,
