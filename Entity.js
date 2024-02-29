@@ -13,6 +13,11 @@ export class Entity {
         this.x = config.x || 0
         this.y = config.y || 0
         this.color = config.color || "white"
+        if (config.image) {
+            this.image_src = config.image
+            this.image = new Image()
+            this.image.src = this.image_src
+        }
         this.height = config.height || 50
         this.width = config.width || 50
     }
@@ -50,8 +55,12 @@ export class Entity {
         this.game.ctx.translate(this.realX, this.realY)
         this.game.ctx.rotate(this.angle * Math.PI / 180)
         this.game.ctx.translate(-(this.realX), -(this.realY))
-        this.game.ctx.fillStyle = this.color
-        this.game.ctx.fillRect(this.realX, this.realY, this.width, this.height)
+        if (this.image) {
+            this.game.ctx.drawImage(this.image, this.realX, this.realY, this.width, this.height)
+        } else{
+            this.game.ctx.fillStyle = this.color
+            this.game.ctx.fillRect(this.realX, this.realY, this.width, this.height)
+        }
         this.game.ctx.translate(this.realX, (this.realY))
         this.game.ctx.rotate(-this.angle * Math.PI / 180)
         this.game.ctx.translate(-(this.realX), -(this.realY))

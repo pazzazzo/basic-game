@@ -19,10 +19,10 @@ export class Game {
         this.phoneControl = new PhoneControl(this)
         this.background = new Background({game: this})
 
-        this.objects.add(new Entity({game: this, x: 100, color: "red"}))
-        this.objects.add(new Entity({game: this, x: 150, y: 50, color: "red"}))
-        this.objects.add(new Entity({game: this, x: 200, y: 100, color: "red"}))
-        this.objects.add(new Entity({game: this, x: 250, y: 150, color: "red"}))
+        this.objects.add(new Entity({game: this, x: 100, image: "assets/crate.png"}))
+        this.objects.add(new Entity({game: this, x: 150, y: 50, image: "assets/crate.png"}))
+        this.objects.add(new Entity({game: this, x: 200, y: 100, image: "assets/crate.png"}))
+        this.objects.add(new Entity({game: this, x: 250, y: 150, image: "assets/crate.png"}))
         this.objects.add(new Entity({game: this, x: -1, y: 0, height: 810, width: 1, color: "red", collidable: false}))
 
         this.cursor = {
