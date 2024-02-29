@@ -44,7 +44,7 @@ export class Game {
             "top": false,
             "not": true
         }
-        if (obj.x <= 0) {
+        if (obj.x <= 4) {
             res["left"] = true
             res["left-object"] = {"y": 0, "x": 0, "width": 0, "height": Infinity}
             res.not = false
@@ -55,7 +55,7 @@ export class Game {
             res["not"] = false
         }
         this.objects.forEach(o => {
-            if (o.uuid === this.uuid || !o.collidable) return
+            if (o.uuid === obj.uuid || !o.collidable) return
             if (obj.x + obj.width > o.x && obj.x < o.x + o.width && obj.y <= o.y + o.height && obj.y > o.y + (o.height / 2)) {
                 res["bottom"] = true
                 res["bottom-object"] = o

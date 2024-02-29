@@ -17,6 +17,7 @@ export class Player extends Entity {
         if (this.controls['ArrowLeft']) {
             if (this.game.collision(this).left) return
             this.vx = -this.speed
+            // this.x = 10
         } else if (this.vx < 0) {
             // this.vx = 0
             this.vx = Math.ceil((this.vx / 1.1) * 10) / 10

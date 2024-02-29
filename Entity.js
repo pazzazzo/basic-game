@@ -6,7 +6,7 @@ export class Entity {
         this.uuid = v4()
         this.game = config.game
         this.gravitysubject = config.gravitysubject || false
-        this.collidable = config.collidable || true
+        this.collidable = (config.collidable === undefined ? true : config.collidable)
         this.angle = config.angle || 0
         this.vx = 0
         this.vy = 0
@@ -23,23 +23,22 @@ export class Entity {
         return this.x + this.game.middle - this.game.player.x
     }
     draw() {
+        let collision = this.game.collision(this, true)
         if (this.vy < 0 && this.collidable) {
-            let collision = this.game.collision(this, true)
             if (collision.bottom) {
                 this.vy = 0
                 this.y = collision["bottom-object"].y + collision["bottom-object"].height
             }
         }
         if (this.vy > 0 && this.collidable) {
-            let collision = this.game.collision(this, true)
             if (collision.top) {
                 this.vy = 0
-                this.y = collision["top-object"].y
+                this.y = collision["top-object"].y - this.height
             }
         }
         this.x += this.vx
         this.y += this.vy
-        let collision = this.game.collision(this, true)
+        collision = this.game.collision(this, true)
         if (collision.right && this.collidable) {
             this.vx = 0
             this.x = collision["right-object"].x - this.width
