@@ -15,7 +15,7 @@ Use the left arrow to go left, the right arrow to go right, the space bar to jum
 Use left button to go left, the right button to go right, the middle button to jump and touch the screen to fire a projectile.
 
 ## How to play
-Avaliable here: [https://pazzazzo.github.io](https://pazzazzo.github.io) 
+Avaliable here: [basic-game](https://pazzazzo.github.io/basic-game) 
 
 ## OpenSource
 This project is fully open source, you are free to improve it.
