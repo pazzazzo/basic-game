@@ -3,13 +3,16 @@ import { Game } from "./Game.js";
 export class Control {
     constructor (game = new Game()) {
         this.game = game
+        this.controls = {}
     }
     init() {
         window.addEventListener("keydown", (e) => {
-            this.game.player.controls[e.key] = true
+            this.controls[e.key] = true
+            this.game.myPlayer().setState("keys", this.controls)
         })
         window.addEventListener("keyup", (e) => {
-            delete this.game.player.controls[e.key]
+            delete this.controls[e.key]
+            this.game.myPlayer().setState("keys", this.controls)
         })
     }
 }

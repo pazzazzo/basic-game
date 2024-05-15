@@ -4,6 +4,7 @@ import { PhoneControl } from "./PhoneControl.js"
 import { Player } from "./Player.js"
 import { Projectile } from "./Projectile.js"
 import { Background } from "./Background.js";
+const { onPlayerJoin, insertCoin, isHost, myPlayer } = Playroom;
 
 export class Game {
     constructor() {
@@ -12,18 +13,21 @@ export class Game {
         this.middle = Math.round(this.canvas.width / 2)
         this.objects = new Set()
         this.buttons = new Set()
-        this.player = new Player({game: this, x:1, y:0, color: "#311212"})
+        this.isHost = isHost
+        this.myPlayer = myPlayer
+        this.player = new Player({ game: this, x: 1, y: 0, color: "#311212", me: true })
+        this.players = new Set()
         this.gravity = 1
 
         this.control = new Control(this)
         this.phoneControl = new PhoneControl(this)
-        this.background = new Background({game: this})
+        this.background = new Background({ game: this })
 
-        this.objects.add(new Entity({game: this, x: 100, image: "assets/crate.png"}))
-        this.objects.add(new Entity({game: this, x: 150, y: 50, image: "assets/crate.png"}))
-        this.objects.add(new Entity({game: this, x: 200, y: 100, image: "assets/crate.png"}))
-        this.objects.add(new Entity({game: this, x: 250, y: 150, image: "assets/crate.png"}))
-        this.objects.add(new Entity({game: this, x: -1, y: 0, height: 810, width: 1, color: "red", collidable: false}))
+        this.objects.add(new Entity({ game: this, x: 100, image: "assets/crate.png" }))
+        this.objects.add(new Entity({ game: this, x: 150, y: 50, image: "assets/crate.png" }))
+        this.objects.add(new Entity({ game: this, x: 200, y: 100, image: "assets/crate.png" }))
+        this.objects.add(new Entity({ game: this, x: 250, y: 150, image: "assets/crate.png" }))
+        this.objects.add(new Entity({ game: this, x: -1, y: 0, height: 810, width: 1, color: "red", collidable: false }))
 
         this.cursor = {
             x: 0,
@@ -46,16 +50,16 @@ export class Game {
         }
         if (obj.x <= 4) {
             res["left"] = true
-            res["left-object"] = {"y": 0, "x": 0, "width": 0, "height": Infinity}
+            res["left-object"] = { "y": 0, "x": 0, "width": 0, "height": Infinity }
             res.not = false
         }
         if (obj.y <= 0) {
             res["bottom"] = true
-            res["bottom-object"] = {"y": 0, "x": -Infinity, "width": Infinity, height: 0}
+            res["bottom-object"] = { "y": 0, "x": -Infinity, "width": Infinity, height: 0 }
             res["not"] = false
         }
         this.objects.forEach(o => {
-            if (o.uuid === obj.uuid || !o.collidable) return
+            if (o.uuid === obj.uuid || !o.collidable || (o.isPlayer && obj.isPlayer)) return
             if (obj.x + obj.width > o.x && obj.x < o.x + o.width && obj.y <= o.y + o.height && obj.y > o.y + (o.height / 2)) {
                 res["bottom"] = true
                 res["bottom-object"] = o
@@ -88,7 +92,37 @@ export class Game {
             this.canvas.height = 500
         }
     }
-    init() {
+    async init() {
+        await insertCoin();
+        onPlayerJoin((state) => {
+            console.log(state);
+            if (isHost()) {
+                console.log("I am host");
+            }
+            if (state.id === state.myId) {
+                myPlayer().setState("keys", {})
+                this.player.color = state.getProfile().color.hexString
+                this.players.add({state, player: this.player})
+                this.objects.add(this.player)
+            } else {
+                myPlayer().setState("keys", {})
+                console.log(state.getProfile().color);
+                let p = {state, player: new Player({ game: this, x: 1, y: 0, color: state.getProfile().color.hexString, me: false })}
+                this.players.add(p)
+                this.objects.add(p.player)
+
+                state.onQuit(() => {
+                    this.players.delete(p)
+                    this.objects.delete(p)
+                });
+            }
+            // players.push({ state, plane });
+            state.onQuit(() => {
+                console.log("Someone left");
+                //scene.remove(plane.mesh);
+                // players = players.filter((p) => p.state != state);
+            });
+        });
         if (this.isMobileUser) {
             screen.orientation.lock("landscape").catch((e) => {
                 console.warn(e);
@@ -111,10 +145,9 @@ export class Game {
             this.cursor.y = y
         })
 
-        this.objects.add(this.player)
         this.control.init()
         this.phoneControl.init()
-        
+
         this.canvas.addEventListener(this.isMobileUser ? "touchstart" : "mousedown", (ME) => {
             if (this.isMobileUser) {
                 this.canvas.requestFullscreen()
@@ -122,11 +155,11 @@ export class Game {
             let can = true
             this.buttons.forEach(b => {
                 if (b.pressed) {
-                    can = false 
+                    can = false
                 }
             })
             if (!can) return
-            this.objects.add(new Projectile({game: this, x: this.player.x + this.player.width/2, y: this.player.y + this.player.height/2}))
+            this.objects.add(new Projectile({ game: this, x: this.player.x + this.player.width / 2, y: this.player.y + this.player.height / 2 }))
         })
 
         this.draw()
@@ -137,15 +170,34 @@ export class Game {
         })
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.background.update()
-        this.objects.forEach(o => {
-            if (o.refresh) {
-                o.refresh()
-            }
-            if (o.gravitysubject && !this.collision(o).bottom) {
-                o.vy -= Math.min(this.gravity + this.gravity*.1, this.gravity)
-            }
-            o.draw()
-        })
+        if (this.isHost()) {
+            this.players.forEach(p => {
+                p.player.controls = p.state.getState("keys") || {}
+            })
+            this.objects.forEach(o => {
+                if (o.refresh) {
+                    o.refresh()
+                }
+                if (o.gravitysubject && !this.collision(o).bottom) {
+                    o.vy -= Math.min(this.gravity + this.gravity * .1, this.gravity)
+                }
+                o.draw()
+            })
+            this.players.forEach(p => {
+                p.state.setState("pos", {x: p.player.x, y: p.player.y})
+            })
+        } else {
+            this.players.forEach(p => {
+                let pos = p.state.getState("pos")
+                if (pos) {
+                    p.player.x = pos.x || 1
+                    p.player.y = pos.y || 0
+                }
+            })
+            this.objects.forEach(o => {
+                o.draw()
+            })
+        }
         if (!this.isMobileUser) {
             this.ctx.fillStyle = "#ffffff"
             this.ctx.beginPath();

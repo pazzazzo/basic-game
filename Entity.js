@@ -28,36 +28,38 @@ export class Entity {
         return this.x + this.game.middle - this.game.player.x
     }
     draw() {
-        let collision = this.game.collision(this, true)
-        if (this.vy < 0 && this.collidable) {
-            if (collision.bottom) {
-                this.vy = 0
-                this.y = collision["bottom-object"].y + collision["bottom-object"].height
+        if (this.game.isHost()) {
+            let collision = this.game.collision(this, true)
+            if (this.vy < 0 && this.collidable) {
+                if (collision.bottom) {
+                    this.vy = 0
+                    this.y = collision["bottom-object"].y + collision["bottom-object"].height
+                }
             }
-        }
-        if (this.vy > 0 && this.collidable) {
-            if (collision.top) {
-                this.vy = 0
-                this.y = collision["top-object"].y - this.height
+            if (this.vy > 0 && this.collidable) {
+                if (collision.top) {
+                    this.vy = 0
+                    this.y = collision["top-object"].y - this.height
+                }
             }
-        }
-        this.x += this.vx
-        this.y += this.vy
-        collision = this.game.collision(this, true)
-        if (collision.right && this.collidable) {
-            this.vx = 0
-            this.x = collision["right-object"].x - this.width
-        }
-        if (collision.left && this.collidable) {
-            this.vx = 0
-            this.x = collision["left-object"].x + collision["left-object"].width
+            this.x += this.vx
+            this.y += this.vy
+            collision = this.game.collision(this, true)
+            if (collision.right && this.collidable) {
+                this.vx = 0
+                this.x = collision["right-object"].x - this.width
+            }
+            if (collision.left && this.collidable) {
+                this.vx = 0
+                this.x = collision["left-object"].x + collision["left-object"].width
+            }
         }
         this.game.ctx.translate(this.realX, this.realY)
         this.game.ctx.rotate(this.angle * Math.PI / 180)
         this.game.ctx.translate(-(this.realX), -(this.realY))
         if (this.image) {
             this.game.ctx.drawImage(this.image, this.realX, this.realY, this.width, this.height)
-        } else{
+        } else {
             this.game.ctx.fillStyle = this.color
             this.game.ctx.fillRect(this.realX, this.realY, this.width, this.height)
         }
