@@ -10,7 +10,10 @@ export class Game {
     constructor() {
         this.canvas = document.querySelector("canvas")
         this.ctx = this.canvas.getContext("2d")
-        this.middle = Math.round(this.canvas.width / 2)
+        this.middle = {
+            x: Math.round(this.canvas.width / 2),
+            y: Math.round(this.canvas.height / 2)
+        }
         this.objects = new Set()
         this.buttons = new Set()
         this.isHost = isHost
@@ -27,6 +30,11 @@ export class Game {
         this.objects.add(new Entity({ game: this, x: 150, y: 50, image: "assets/crate.png" }))
         this.objects.add(new Entity({ game: this, x: 200, y: 100, image: "assets/crate.png" }))
         this.objects.add(new Entity({ game: this, x: 250, y: 150, image: "assets/crate.png" }))
+        this.objects.add(new Entity({ game: this, x: 350, y: 300, image: "assets/crate.png" }))
+        this.objects.add(new Entity({ game: this, x: 450, y: 450, image: "assets/crate.png" }))
+        for (let i = 0; i < 10; i++) {
+            this.objects.add(new Entity({ game: this, x: 450 + i*100, y: 450 + i *150, image: "assets/crate.png" }))
+        }
         this.objects.add(new Entity({ game: this, x: -1, y: 0, height: 810, width: 1, color: "red", collidable: false }))
 
         this.cursor = {
@@ -85,7 +93,10 @@ export class Game {
     }
     resize() {
         this.canvas.width = innerWidth
-        this.middle = Math.round(this.canvas.width / 2)
+        this.middle = {
+            x: Math.round(this.canvas.width / 2),
+            y: Math.round(this.canvas.height / 2)
+        }
         if (this.isMobileUser) {
             this.canvas.height = innerHeight
         } else {
@@ -102,12 +113,21 @@ export class Game {
             if (state.id === state.myId) {
                 myPlayer().setState("keys", {})
                 this.player.color = state.getProfile().color.hexString
-                this.players.add({state, player: this.player})
+                this.players.add({ state, player: this.player })
                 this.objects.add(this.player)
             } else {
                 myPlayer().setState("keys", {})
-                console.log(state.getProfile().color);
-                let p = {state, player: new Player({ game: this, x: 1, y: 0, color: state.getProfile().color.hexString, me: false })}
+                let p = { state, player: new Player({ game: this, x: 1, y: 0, me: false }) }
+                if (!state.getProfile().color) {
+                    let int = setInterval(() => {
+                        if (state.getProfile().color) {
+                            clearInterval(int)
+                            p.player.color = state.getProfile().color.hexString
+                        }
+                    }, 500);
+                } else {
+                    p.player.color = state.getProfile().color.hexString
+                }
                 this.players.add(p)
                 this.objects.add(p.player)
 
@@ -184,7 +204,7 @@ export class Game {
                 o.draw()
             })
             this.players.forEach(p => {
-                p.state.setState("pos", {x: p.player.x, y: p.player.y})
+                p.state.setState("pos", { x: p.player.x, y: p.player.y })
             })
         } else {
             this.players.forEach(p => {

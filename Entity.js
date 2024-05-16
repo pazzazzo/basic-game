@@ -22,10 +22,14 @@ export class Entity {
         this.width = config.width || 50
     }
     get realY() {
-        return this.game.y(this.y + this.height)
+        if (this.game.player.y < this.game.middle.y) {
+            return this.game.y(this.y + this.height) 
+        } else {
+            return this.game.y(this.y - this.game.player.y + this.height + this.game.middle.y)
+        }
     }
     get realX() {
-        return this.x + this.game.middle - this.game.player.x
+        return this.x + this.game.middle.x - this.game.player.x
     }
     draw() {
         if (this.game.isHost()) {
