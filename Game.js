@@ -5,9 +5,11 @@ import { Player } from "./Player.js"
 import { Projectile } from "./Projectile.js"
 import { Background } from "./Background.js";
 const { onPlayerJoin, insertCoin, isHost, myPlayer } = Playroom;
+const menu = document.getElementsByClassName("plateform")[0]
 
 export class Game {
     constructor() {
+        this.version = "0.0.2"
         this.canvas = document.querySelector("canvas")
         this.ctx = this.canvas.getContext("2d")
         this.middle = {
