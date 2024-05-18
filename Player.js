@@ -22,7 +22,7 @@ export class Player extends Entity {
             } else {
                 this.speed = 10
             }
-            if (this.controls['ArrowLeft']) {
+            if (this.controls['ArrowLeft'] || this.controls['q']) {
                 if (this.game.collision(this).left) return
                 this.vx = -this.speed
                 // this.x = 10
@@ -35,7 +35,7 @@ export class Player extends Entity {
                 }
             }
 
-            if (this.controls['ArrowRight']) {
+            if (this.controls['ArrowRight'] || this.controls['d']) {
                 if (this.game.collision(this).right) return
                 this.vx = this.speed
             } else if (this.vx > 0) {
