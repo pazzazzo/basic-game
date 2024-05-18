@@ -1,7 +1,7 @@
 import { Game } from "./Game.js";
 
 export class Control {
-    constructor (game = new Game()) {
+    constructor(game = new Game()) {
         this.game = game
         this.controls = {}
     }
@@ -19,11 +19,10 @@ export class Control {
         window.addEventListener("keypress", (e) => {
             e.preventDefault()
         })
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "hidden") {
-                this.controls = {}
-                this.game.myPlayer().setState("keys", this.controls)
-            }
+        document.addEventListener("blur", () => {
+            this.controls = {}
+            this.game.myPlayer().setState("keys", this.controls)
+
         })
     }
 }
