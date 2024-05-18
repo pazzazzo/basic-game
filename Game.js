@@ -135,7 +135,7 @@ export class Game {
 
                 state.onQuit(() => {
                     this.players.delete(p)
-                    this.objects.delete(p)
+                    this.objects.delete(p.player)
                 });
             }
             // players.push({ state, plane });
@@ -169,7 +169,6 @@ export class Game {
 
         this.control.init()
         this.phoneControl.init()
-
         this.canvas.addEventListener(this.isMobileUser ? "touchstart" : "mousedown", (ME) => {
             if (this.isMobileUser) {
                 this.canvas.requestFullscreen()
@@ -181,7 +180,10 @@ export class Game {
                 }
             })
             if (!can) return
-            this.objects.add(new Projectile({ game: this, x: this.player.x + this.player.width / 2, y: this.player.y + this.player.height / 2 }))
+            let proj = new Projectile({ game: this, x: this.player.x + this.player.width / 2, y: this.player.y + this.player.height / 2, from: myPlayer().id })
+            let projs = myPlayer().getState("projectiles") || {}
+            projs[proj.uuid] = {x: proj.x, y: proj.y, from: proj.from, angle: proj.angle}
+            myPlayer().setState("projectiles", projs)
         })
 
         this.draw()
@@ -195,6 +197,19 @@ export class Game {
         if (this.isHost()) {
             this.players.forEach(p => {
                 p.player.controls = p.state.getState("keys") || {}
+                const projs = p.state.getState("projectiles") || {}
+                for (const projId in projs) {
+                    const proj = new Projectile({game: this, ...projs[projId]})
+                    proj.x += proj.vx
+                    proj.y += proj.vy
+                    proj.refresh()
+                    if (proj.deleted) {
+                        delete projs[projId]
+                    } else {
+                        projs[projId] = {x: proj.x, y: proj.y, from: proj.from, angle: proj.angle}
+                    }
+                    p.state.setState("projectiles", projs)
+                }
             })
             this.objects.forEach(o => {
                 if (o.refresh) {
@@ -220,6 +235,13 @@ export class Game {
                 o.draw()
             })
         }
+        this.players.forEach(p => {
+            const projs = p.state.getState("projectiles") || {}
+            for (const projId in projs) {
+                const proj = new Projectile({game: this, ...projs[projId]})
+                proj.draw()
+            }
+        })
         if (!this.isMobileUser) {
             this.ctx.fillStyle = "#ffffff"
             this.ctx.beginPath();

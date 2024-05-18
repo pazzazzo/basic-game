@@ -3,7 +3,7 @@ import { v4 } from 'https://jspm.dev/uuid';
 
 export class Entity {
     constructor(config = { game: new Game() }) {
-        this.uuid = v4()
+        this.uuid = config.uuid || v4()
         this.game = config.game
         this.gravitysubject = config.gravitysubject || false
         this.collidable = (config.collidable === undefined ? true : config.collidable)
